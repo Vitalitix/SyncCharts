@@ -1,0 +1,91 @@
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="ss.css" />
+		<script src="https://code.highcharts.com/highcharts.js"></script>
+	</head>
+	<body>
+		<div id="container">
+			<div id="chart1" class="schart"></div>
+			<div id="chart2" data-sync="1" class="schart"></div>
+			<div id="chart3" data-sync="1" class="schart"></div>
+			<div id="chart4" data-sync="2" class="schart"></div>
+			<div id="chart5" data-sync="2" class="schart"></div>
+		</div>
+	</body>
+</html>
+
+<script type="module">
+	import { syncExtremes, setChartSync } from './syncCharts.js'
+	fetch('./data.json').then((response) => response.json()).then((activity) => {
+			activity.datasets = [...activity.datasets, activity.datasets[0], activity.datasets[1]]
+			const ser2 = {
+				data: activity.datasets[1].data.map((val, j) => [activity.xData[j], val]),
+				name: activity.datasets[1].name,
+				type: activity.datasets[1].type,
+				color: Highcharts.getOptions().colors[1],
+				fillOpacity: 0.3,
+				tooltip: { valueSuffix: ' ' + activity.datasets[1].unit },
+			}
+			const proms = []
+			activity.datasets.forEach((dataset, i) => {
+				proms.push(
+					new Promise((accept) => {
+						const ser1 = {
+							data: dataset.data.map((val, j) => [activity.xData[j], val]),
+							name: dataset.name,
+							type: dataset.type,
+							color: Highcharts.getOptions().colors[i],
+							fillOpacity: 0.3,
+							tooltip: { valueSuffix: ' ' + dataset.unit },
+						}
+						const ser = i == 2 ? [ser1, ser2] : [ser1]
+						const chartDiv = document.getElementById(`chart${i + 1}`)
+						Highcharts.chart(chartDiv, {
+							chart: {
+								zoomType: 'x',
+								events: {
+									load(event) {
+										accept()
+									},
+								},
+							},
+							title: {
+								text: dataset.name,
+								align: 'left',
+								margin: 0,
+								x: 30,
+							},
+							credits: {
+								enabled: false,
+							},
+							legend: {
+								enabled: false,
+							},
+							yAxis: {
+								title: null,
+							},
+							xAxis: {
+								crosshair: true,
+								events: {
+									setExtremes: syncExtremes,
+								},
+								labels: {
+									format: '{value} km',
+								},
+							},
+							tooltip: {
+								shared: true,
+								backgroundColor: 'rgba(246, 246, 246, 0.3)',
+							},
+							series: ser,
+						})
+					})
+				)
+			})
+			Promise.all(proms).then(() => {
+				setChartSync('[data-sync="1"]')
+				setChartSync('[data-sync="2"]')
+			})
+		},
+	)
+</script>
