@@ -5,18 +5,20 @@
 	</head>
 	<body>
 		<div id="container">
-			<div id="chart1" class="schart"></div>
-			<div id="chart2" data-sync="1" class="schart"></div>
-			<div id="chart3" data-sync="1" class="schart"></div>
-			<div id="chart4" data-sync="2" class="schart"></div>
-			<div id="chart5" data-sync="2" class="schart"></div>
+			<div id="chart1" class="schart1"></div>
+			<div id="chart2" data-sync="1" class="schart1"></div>
+			<div id="chart3" data-sync="1" class="schart2"></div>
+			<div id="chart4" data-sync="2" class="schart1"></div>
+			<div id="chart5" data-sync="2" class="schart2"></div>
 		</div>
 	</body>
 </html>
 
 <script type="module">
 	import { syncExtremes, setChartSync } from './syncCharts.js'
-	fetch('./data.json').then((response) => response.json()).then((activity) => {
+	fetch('./data.json')
+		.then((response) => response.json())
+		.then((activity) => {
 			activity.datasets = [...activity.datasets, activity.datasets[0], activity.datasets[1]]
 			const ser2 = {
 				data: activity.datasets[1].data.map((val, j) => [activity.xData[j], val]),
@@ -86,6 +88,5 @@
 				setChartSync('[data-sync="1"]')
 				setChartSync('[data-sync="2"]')
 			})
-		},
-	)
+		})
 </script>
